@@ -4,20 +4,26 @@ import com.example.reactive.dto.PostDto
 import com.example.reactive.dto.toEntity
 import com.example.reactive.entity.toDto
 import com.example.reactive.repository.PostRepository
+import jakarta.validation.Valid
+import jakarta.validation.Validator
 import kotlinx.coroutines.flow.map
+import mu.KLogging
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
-import org.springframework.stereotype.Component
-import org.springframework.web.reactive.function.server.ServerRequest
-import org.springframework.web.reactive.function.server.ServerResponse
-import org.springframework.web.reactive.function.server.awaitBodyOrNull
-import org.springframework.web.reactive.function.server.bodyAndAwait
-import org.springframework.web.reactive.function.server.bodyValueAndAwait
-import org.springframework.web.reactive.function.server.buildAndAwait
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.reactive.function.server.*
 
-@Component
+@RestController
 class PostHandler(
     private val postRepository: PostRepository
 ) {
+
+    companion object: KLogging()
+
+    @Autowired
+    private val validator: Validator? = null
+
     suspend fun getAll(req: ServerRequest): ServerResponse {
         return ServerResponse
             .ok()
@@ -39,7 +45,7 @@ class PostHandler(
         } ?: ServerResponse.notFound().buildAndAwait()
     }
 
-    suspend fun add(req: ServerRequest): ServerResponse {
+    suspend fun add(@RequestBody req : ServerRequest): ServerResponse {
         val post = req.awaitBodyOrNull(PostDto::class)
 
         return post?.let {
@@ -54,7 +60,7 @@ class PostHandler(
         } ?: ServerResponse.badRequest().buildAndAwait()
     }
 
-    suspend fun update(req: ServerRequest): ServerResponse {
+    suspend fun update(@Valid @RequestBody req: ServerRequest): ServerResponse {
         val id = req.pathVariable("id")
 
         val receivedPost = req.awaitBodyOrNull(PostDto::class)

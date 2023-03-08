@@ -15,8 +15,8 @@ class H2DatabaseConfiguration {
     fun initializeTable(@Qualifier("connectionFactory") connectionFactory: ConnectionFactory): ConnectionFactoryInitializer {
         val initializer = ConnectionFactoryInitializer()
         initializer.setConnectionFactory(connectionFactory)
-        initializer.setDatabasePopulator(ResourceDatabasePopulator(ClassPathResource("migrations/V1__createUserTable.sql")))
-        initializer.setDatabasePopulator(ResourceDatabasePopulator(ClassPathResource("migrations/V2__createPostTable.sql")))
+//        initializer.setDatabasePopulator(ResourceDatabasePopulator(ClassPathResource("migrations/V1__createUserTable.sql")))
+//        initializer.setDatabasePopulator(ResourceDatabasePopulator(ClassPathResource("migrations/V2__createPostTable.sql")))
         return initializer
     }
 }
