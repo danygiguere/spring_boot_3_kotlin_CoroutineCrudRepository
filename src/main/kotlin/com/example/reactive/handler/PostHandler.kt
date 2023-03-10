@@ -4,12 +4,14 @@ import com.example.reactive.dto.PostDto
 import com.example.reactive.dto.toEntity
 import com.example.reactive.entity.toDto
 import com.example.reactive.repository.PostRepository
+import jakarta.validation.ConstraintViolation
 import jakarta.validation.Valid
 import jakarta.validation.Validator
 import kotlinx.coroutines.flow.map
 import mu.KLogging
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
+import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.reactive.function.server.*
@@ -47,7 +49,17 @@ class PostHandler(
 
     suspend fun add(@RequestBody req : ServerRequest): ServerResponse {
         val post = req.awaitBodyOrNull(PostDto::class)
-
+        val validatedPost: MutableSet<ConstraintViolation<PostDto?>>? = validator?.validate(post)
+        if (validatedPost != null) {
+            if (validatedPost.isNotEmpty()) {
+                logger.info("validation failed: $validatedPost")
+                for (error in validatedPost) {
+                    logger.info("validation error: ${error.message}")
+                }
+            } else {
+                logger.info("validation passed: $validatedPost")
+            }
+        }
         return post?.let {
             ServerResponse
                 .ok()
