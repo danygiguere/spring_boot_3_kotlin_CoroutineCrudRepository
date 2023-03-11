@@ -11,6 +11,7 @@ import org.springframework.web.reactive.function.server.coRouter
 class RouterConfiguration(
     private val userHandler: UserHandler,
     private val postHandler: PostHandler) {
+
     @Bean
     fun apiRouter() = coRouter {
         accept(APPLICATION_JSON).nest {

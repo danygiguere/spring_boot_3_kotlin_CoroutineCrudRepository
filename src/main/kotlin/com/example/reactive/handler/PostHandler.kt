@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.reactive.function.server.*
 import java.util.*
+import org.springframework.context.i18n.LocaleContextHolder
 
 @RestController
 class PostHandler(
@@ -49,9 +50,12 @@ class PostHandler(
 
     suspend fun add(@RequestBody req : ServerRequest): ServerResponse {
         val locale = req.headers().acceptLanguage()
+//        LocaleContextHolder.setLocale(Locale.FRENCH)
         logger.info("locale: $locale")
         val post = req.awaitBodyOrNull(PostDto::class)
         val validatedPost: MutableSet<ConstraintViolation<PostDto?>>? = validator?.validate(post)
+
+
         if (validatedPost != null) {
             if (validatedPost.isNotEmpty()) {
                 val errorMap: MutableMap<String, ArrayList<String>> = HashMap()

@@ -2,9 +2,11 @@ package com.example.reactive.dto
 
 import com.example.reactive.entity.Post
 import jakarta.validation.constraints.NotEmpty
+import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 
 data class PostDto(
+    @get:NotNull()
     @get:NotEmpty()
     @get:Size(min = 6, max = 25, message = "{title.size}")
     val title: String,
