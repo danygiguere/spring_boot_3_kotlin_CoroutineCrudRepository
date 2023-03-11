@@ -21,7 +21,7 @@ class PostController(private val postRepository: PostRepository) {
     }
 
     @PostMapping("/posts")
-    suspend fun create(@RequestBody @Valid postDto: PostDto): ResponseEntity<Post> {
+    suspend fun create(@Valid @RequestBody postDto: PostDto): ResponseEntity<Post> {
         val post = postRepository.save(Post(null, postDto.title, postDto.description))
         return ResponseEntity.ok(post)
     }

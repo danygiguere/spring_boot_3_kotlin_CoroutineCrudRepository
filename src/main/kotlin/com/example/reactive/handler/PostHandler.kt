@@ -11,10 +11,10 @@ import kotlinx.coroutines.flow.map
 import mu.KLogging
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
-import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.reactive.function.server.*
+import java.util.*
 
 @RestController
 class PostHandler(
@@ -48,14 +48,22 @@ class PostHandler(
     }
 
     suspend fun add(@RequestBody req : ServerRequest): ServerResponse {
+        val locale = req.headers().acceptLanguage()
+        logger.info("locale: $locale")
         val post = req.awaitBodyOrNull(PostDto::class)
         val validatedPost: MutableSet<ConstraintViolation<PostDto?>>? = validator?.validate(post)
         if (validatedPost != null) {
             if (validatedPost.isNotEmpty()) {
-                logger.info("validation failed: $validatedPost")
+                val errorMap: MutableMap<String, ArrayList<String>> = HashMap()
                 for (error in validatedPost) {
-                    logger.info("validation error: ${error.message}")
+                    val message = error.message
+                    if (message != null) {
+                        errorMap.getOrPut(error.propertyPath.toString(), defaultValue = { ArrayList() }).add(message)
+                    }
                 }
+                return ServerResponse.badRequest()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValueAndAwait(errorMap)
             } else {
                 logger.info("validation passed: $validatedPost")
             }
