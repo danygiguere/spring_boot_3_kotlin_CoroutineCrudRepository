@@ -4,29 +4,15 @@ import com.example.reactive.dto.PostDto
 import com.example.reactive.dto.toEntity
 import com.example.reactive.entity.toDto
 import com.example.reactive.repository.PostRepository
-import jakarta.validation.ConstraintViolation
-import jakarta.validation.Valid
-import jakarta.validation.Validator
 import kotlinx.coroutines.flow.map
-import mu.KLogging
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
-import java.util.*
-import org.springframework.context.i18n.LocaleContextHolder
 
-@RestController
+@Component
 class PostHandler(
     private val postRepository: PostRepository
 ) {
-
-    companion object: KLogging()
-
-    @Autowired
-    private val validator: Validator? = null
-
     suspend fun getAll(req: ServerRequest): ServerResponse {
         return ServerResponse
             .ok()
@@ -48,30 +34,9 @@ class PostHandler(
         } ?: ServerResponse.notFound().buildAndAwait()
     }
 
-    suspend fun add(@RequestBody req : ServerRequest): ServerResponse {
-        val locale = req.headers().acceptLanguage()
-//        LocaleContextHolder.setLocale(Locale.FRENCH)
-        logger.info("locale: $locale")
+    suspend fun add(req: ServerRequest): ServerResponse {
         val post = req.awaitBodyOrNull(PostDto::class)
-        val validatedPost: MutableSet<ConstraintViolation<PostDto?>>? = validator?.validate(post)
 
-
-        if (validatedPost != null) {
-            if (validatedPost.isNotEmpty()) {
-                val errorMap: MutableMap<String, ArrayList<String>> = HashMap()
-                for (error in validatedPost) {
-                    val message = error.message
-                    if (message != null) {
-                        errorMap.getOrPut(error.propertyPath.toString(), defaultValue = { ArrayList() }).add(message)
-                    }
-                }
-                return ServerResponse.badRequest()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValueAndAwait(errorMap)
-            } else {
-                logger.info("validation passed: $validatedPost")
-            }
-        }
         return post?.let {
             ServerResponse
                 .ok()
@@ -84,7 +49,7 @@ class PostHandler(
         } ?: ServerResponse.badRequest().buildAndAwait()
     }
 
-    suspend fun update(@Valid @RequestBody req: ServerRequest): ServerResponse {
+    suspend fun update(req: ServerRequest): ServerResponse {
         val id = req.pathVariable("id")
 
         val receivedPost = req.awaitBodyOrNull(PostDto::class)
